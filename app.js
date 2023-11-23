@@ -20,13 +20,14 @@ client.on('error', err => console.log('Redis Client Error', err));
 
 await client.connect();
 
+await client.set('num', 0);
 
 app.use(express.json())
 
 app.get("/", async (req, res) => {
   try {
-    await client.set('foo', 'bar');
-    const value = await client.get('foo');
+    client.incr("num")
+    const value = await client.get('num');
     console.log(value)
     res.status(200).send(value);
   } catch (err) {
