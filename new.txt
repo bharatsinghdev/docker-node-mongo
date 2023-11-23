@@ -1,0 +1,2 @@
+  "inspect": "kill-port --port 5000 && node --inspect=0.0.0.0:5000  ./app.js",
+  "start_watch_inspect": "nodemon --delay 80ms --exec 'fuser -k 56745/tcp; node --inspect=0.0.0.0:56745 ./app.js'",
