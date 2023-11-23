@@ -1,29 +1,41 @@
-let express = require('express')
-const redis = require('redis');
-let app = express();
+import express from 'express';
+import { createClient } from 'redis';
+
+const app = express()
+
+const client = createClient({
+  // username: 'default', // use your Redis user. More info https://redis.io/docs/management/security/acl/
+  // password: 'secret', // use your password here
+  socket: {
+    host: 'redis',
+    port: 6379,
+    // tls: true,
+    // key: readFileSync('./redis_user_private.key'),
+    // cert: readFileSync('./redis_user.crt'),
+    // ca: [readFileSync('./redis_ca.pem')]
+  }
+});
+
+client.on('error', err => console.log('Redis Client Error', err));
+
+await client.connect();
+
 
 app.use(express.json())
 
-app.get("/", (req, res) => {
-  console.log("Listening Get")
-  client.get('data', (err, data) => {
-    if (err) throw err;
-
-    if (data) {
-      // If cached data exists, return it
-      res.send(`Data from cache: ${data}`);
-    } else {
-      // If data is not in the cache, simulate fetching from a database
-      const newData = 'This is the data from the database';
-
-      // Set the data in the cache with an expiration time (e.g., 1 minute)
-      client.setex('data', 60, newData);
-
-      // Return the data
-      res.send(`Fetched from the database: ${newData}`);
-    }
-  });
+app.get("/", async (req, res) => {
+  try {
+    await client.set('foo', 'bar');
+    const value = await client.get('foo');
+    console.log(value)
+    res.status(200).send(value);
+  } catch (err) {
+    console.log(err)
+    res.status(500).send("Error: " + err.message)
+  }
 })
+
+
 console.log("ye lookkk")
 app.listen(5000, () => {
   console.log("Listening Port")
